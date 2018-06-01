@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors'); 
 const actionsDb = require('./data/helpers/actionModel.js');
 const projectsDb = require('./data/helpers/projectModel.js');
-const mappers = require('./data/helpers/mappers.js');
 const port = 6000;
 
 const server = express();
