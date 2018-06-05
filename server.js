@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors'); 
 const actions = require('./data/helpers/actionModel.js');
 const projects = require('./data/helpers/projectModel.js');
-const port = 5800;
+const port = process.env.PORT || 5800;
 
 const server = express();
 server.use(express.json());
@@ -43,7 +43,7 @@ server.post('/api/actions', nameCheckMiddleware, (req, res) => {
             res.json(response);            
         })
         .catch(error => {
-            return sendUserError(500, "There's an error.", res); 
+            return sendUserError(500, error, res); 
         });
 })
 
@@ -58,7 +58,7 @@ server.get('/api/actions/:id', (req, res) => {
             res.json(userAction); 
         })
         .catch(error => {
-            return sendUserError(500, "There's an error.", res);
+            return sendUserError(500, error, res);
         });
 }); 
 
@@ -86,15 +86,12 @@ server.put('/api/actions/:id', nameCheckMiddleware, (req, res) => {
         .then(response => {
             if (response === 0) {
                 return sendUserError(404, "No action by that id.", res); 
-            } else {
-                actions.find(id).then(action => {
-                    res.json(action); 
-                }); 
             }
+            res.status(201).json(response);             
         })
         .catch(error => {
-            return sendUserError(500, "There's an error.", res); 
-        }); 
+            return sendUserError(500, error.message, res); 
+        })
 }); 
 
 // === PROJECT ENDPOINTS === 
@@ -106,7 +103,7 @@ server.get('/api/projects', (req, res) => {
             res.json(foundProjects); 
         })
         .catch(error => {
-            return sendUserError(500, "There's an error.", res);             
+            return sendUserError(500, error.message, res);             
         }); 
 }); 
 
@@ -137,7 +134,7 @@ server.post('/api/projects', (req, res) => {
         });
 })
 
-server.get('/api/projects/:project_id', (req, res) => {
+server.get('/api/:project_id/:projects', (req, res) => {
     const { project_id } = req.params;
     projects
         .getProjectActions(project_id)
@@ -165,7 +162,7 @@ server.delete('/api/projects/:id', (req, res) => {
             }
         })
         .catch(error => {
-            return sendUserError(500, "There's an error.", res);
+            return sendUserError(500, error.message, res);
         }); 
 }); 
 
@@ -176,15 +173,12 @@ server.put('/api/projects/:id', (req, res) => {
         .update(id, { name, description })
         .then(response => {
             if (response === 0) {
-                return sendUserError(404, "No project by that id.", res); 
-            } else {
-                projects.find(id).then(projects => {
-                    res.json(projects); 
-                }); 
-            }
+                return sendUserError(404, error.message, res); 
+            } 
+            res.status(201).json(response);         
         })
         .catch(error => {
-            return sendUserError(500, "There's an error.", res); 
+            return sendUserError(500, error.message, res); 
         }); 
 }); 
 
