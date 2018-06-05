@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors'); 
-const actionsDb = require('./data/helpers/actionModel.js');
-const projectsDb = require('./data/helpers/projectModel.js');
-const port = 6000;
+const actions = require('./data/helpers/actionModel.js');
+const projects = require('./data/helpers/projectModel.js');
+const port = 5800;
 
 const server = express();
 server.use(express.json());
@@ -25,7 +25,7 @@ const nameCheckMiddleware = (req, res, next) => {
 
 // === ACTION ENDPOINTS === 
 server.get('/api/actions', (req, res) => {
-    actionsDb
+    actions
         .get()
         .then(foundActions => {
             res.json(foundActions); 
@@ -36,9 +36,9 @@ server.get('/api/actions', (req, res) => {
 }); 
 
 server.post('/api/actions', nameCheckMiddleware, (req, res) => {
-    const { name, description } = req.body; 
-    actionsDb
-        .insert({ name, description })
+    const { project_id, description, notes } = req.body; 
+    actions
+        .insert({ project_id, description, notes })
         .then(response => {
             res.json(response);            
         })
@@ -49,13 +49,13 @@ server.post('/api/actions', nameCheckMiddleware, (req, res) => {
 
 server.get('/api/actions/:id', (req, res) => {
     const { id } = req.params; 
-    actionsDb
+    actions
         .get(id)
-        .then(action => {
-            if (action === 0) {
+        .then(userAction => {
+            if (userAtion === 0) {
                 return sendUserError(404, "No action by that ID found.", res);                
             }
-            res.json(action); 
+            res.json(userAction); 
         })
         .catch(error => {
             return sendUserError(500, "There's an error.", res);
@@ -64,7 +64,7 @@ server.get('/api/actions/:id', (req, res) => {
 
 server.delete('/api/actions/:id', (req, res) => {
     const { id } = req.params; 
-    actionsDb
+    actions
         .remove(id)
         .then(actionRemoved => {
             if (actionRemoved === 0) {
@@ -80,14 +80,14 @@ server.delete('/api/actions/:id', (req, res) => {
 
 server.put('/api/actions/:id', nameCheckMiddleware, (req, res) => {
     const { id } = req.params; 
-    const { name, description } = req.body;
-    actionsDb
-        .update(id, { name, description })
+    const { project_id, description, notes } = req.body;
+    actions
+        .update(id, { project_id, description, notes })
         .then(response => {
             if (response === 0) {
                 return sendUserError(404, "No action by that id.", res); 
             } else {
-                actionsDb.find(id).then(action => {
+                actions.find(id).then(action => {
                     res.json(action); 
                 }); 
             }
@@ -100,7 +100,7 @@ server.put('/api/actions/:id', nameCheckMiddleware, (req, res) => {
 // === PROJECT ENDPOINTS === 
 
 server.get('/api/projects', (req, res) => {
-    projectsDb
+    projects
         .get()
         .then(foundProjects => {
             res.json(foundProjects); 
@@ -112,13 +112,13 @@ server.get('/api/projects', (req, res) => {
 
 server.get('/api/projects/:id', (req, res) => {
     const { id } = req.params; 
-    projectsDb
+    projects
         .get(id)
-        .then(project => {
-            if (project === 0) {
+        .then(userProject => {
+            if (userProject === 0) {
                 return sendUserError(404, "No project by that ID found.", res);                
             }
-            res.json(project); 
+            res.json(userProject); 
         })
         .catch(error => {
             return sendUserError(500, "There's an error.", res);
@@ -126,9 +126,9 @@ server.get('/api/projects/:id', (req, res) => {
 }); 
 
 server.post('/api/projects', (req, res) => {
-    const { project_id, description, notes } = req.body; 
-    projectsDb
-        .insert({ project_id, description, notes })
+    const { name, description } = req.body; 
+    projects
+        .insert({ name, description })
         .then(response => {
             res.json(response);            
         })
@@ -139,7 +139,7 @@ server.post('/api/projects', (req, res) => {
 
 server.get('/api/projects/:project_id', (req, res) => {
     const { project_id } = req.params;
-    projectsDb
+    projects
         .getProjectActions(project_id)
         .then(projectActions => {
             if (projectActions === 0) {
@@ -155,7 +155,7 @@ server.get('/api/projects/:project_id', (req, res) => {
 
 server.delete('/api/projects/:id', (req, res) => {
     const { id } = req.params; 
-    projectsDb
+    projects
         .remove(id)
         .then(projectRemoved => {
             if (projectRemoved === 0) {
@@ -171,15 +171,15 @@ server.delete('/api/projects/:id', (req, res) => {
 
 server.put('/api/projects/:id', (req, res) => {
     const { id } = req.params; 
-    const { project_id, description, notes } = req.body;
-    projectsDb
-        .update(id, { project_id, description, notes })
+    const { name, description } = req.body;
+    projects
+        .update(id, { name, description })
         .then(response => {
             if (response === 0) {
                 return sendUserError(404, "No project by that id.", res); 
             } else {
-                projectsDb.find(id).then(action => {
-                    res.json(action); 
+                projects.find(id).then(projects => {
+                    res.json(projects); 
                 }); 
             }
         })
